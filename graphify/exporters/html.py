@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from graphify.exporters.base import COMMUNITY_COLORS  # noqa: E402,F401
 from graphify.exporters.html_data import build_html_payload
+from graphify.exporters.html_3d import html_3d_script
 from pathlib import Path
 import html as _html
 from graphify.analyze import _node_community_map
@@ -44,7 +45,11 @@ def _html_styles() -> str:
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; display: flex; height: 100vh; overflow: hidden; }
-  #graph { flex: 1; }
+  #graph { flex: 1; min-width: 0; }
+  #graph3d { flex: 1; min-width: 0; display: none; }
+  #graphify-view-toggle { display: flex; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  #graphify-view-toggle button { flex: 1; background: var(--bg); color: var(--text-2); border: 1px solid var(--input-border); border-radius: 4px; padding: 5px; cursor: pointer; }
+  #graphify-view-toggle button[aria-pressed="true"] { background: #4E79A7; color: #fff; }
   #sidebar { width: 280px; background: var(--panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
   #search-wrap { padding: 12px; border-bottom: 1px solid var(--border); }
   #search { width: 100%; background: var(--bg); border: 1px solid var(--input-border); color: var(--text); padding: 7px 10px; border-radius: 6px; font-size: 13px; outline: none; }
@@ -282,6 +287,7 @@ function showInfo(nodeId) {{
 }}
 
 function focusNode(nodeId) {{
+  if (window.graphifyIs3d && window.graphifyIs3d()) {{ window.graphifyFocus3d(nodeId); return; }}
   network.focus(nodeId, {{ scale: 1.4, animation: true }});
   network.selectNodes([nodeId]);
   showInfo(nodeId);
@@ -386,9 +392,7 @@ searchInput.addEventListener('input', () => {{
     el.style.borderLeft = `3px solid ${{n.color.background}}`;
     el.style.paddingLeft = '8px';
     el.onclick = () => {{
-      network.focus(n.id, {{ scale: 1.5, animation: true }});
-      network.selectNodes([n.id]);
-      showInfo(n.id);
+      focusNode(n.id);
       searchResults.style.display = 'none';
       searchInput.value = '';
     }};
@@ -621,7 +625,12 @@ def to_html(
 </head>
 <body>
 <div id="graph"></div>
+<div id="graph3d" aria-label="3D graph visualization"></div>
 <div id="sidebar">
+  <div id="graphify-view-toggle" role="group" aria-label="Graph dimension">
+    <button id="graphify-view-2d" type="button" aria-pressed="true">2D</button>
+    <button id="graphify-view-3d" type="button" aria-pressed="false">3D</button>
+  </div>
   <div id="theme-wrap" role="group" aria-label="Theme">
     <button type="button" data-theme-choice="light">Light</button>
     <button type="button" data-theme-choice="dark">Dark</button>
@@ -645,6 +654,7 @@ def to_html(
   <div id="stats">{stats}</div>
 </div>
 {_html_script(nodes_json, edges_json, legend_json)}
+{html_3d_script()}
 {_hyperedge_script(hyperedges_json)}
 </body>
 </html>"""
