@@ -1,3 +1,7 @@
+> **Reza Souri fork — 3D visualization enhancement:** This fork adds an optional interactive **3D WebGL view** to Graphify's generated `graph.html`, alongside the existing 2D visualization. The implementation is in [`html_3d.py`](https://github.com/rezasouri/graphify/blob/v8/graphify/exporters/html_3d.py); see the [implementation commit](https://github.com/rezasouri/graphify/commit/fdcb160bf264750379b06f3344ec1ede02d3f5ee). Browser-level 2D/3D interaction testing is tracked in [PR #3](https://github.com/rezasouri/graphify/pull/3). This is an independent fork enhancement, not an official Graphify Labs feature.
+
+---
+
 <p align="center">
   <a href="https://graphify.com"><img src="https://raw.githubusercontent.com/Graphify-Labs/graphify/v8/docs/graphify-logo.png" width="360" height="189" alt="Graphify"/></a>
 </p>
