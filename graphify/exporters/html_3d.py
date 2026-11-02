@@ -32,7 +32,11 @@ def html_3d_script() -> str:
     clearTimeout(refreshTimer);
     refreshTimer = setTimeout(() => viewer.graphData(renderData()), 40);
   }
-  nodesDS.on('update', refresh);
+  // Both vis DataSet updates and graph replacement (clear/add) must refresh 3D.
+  for (const event of ['add', 'update', 'remove']) {
+    nodesDS.on(event, refresh);
+    edgesDS.on(event, refresh);
+  }
 
   function focus3d(id) {
     if (!viewer) return;
