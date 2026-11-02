@@ -89,7 +89,11 @@ def html_3d_script() -> str:
       .nodeLabel(n => esc(n.label)).linkLabel(e => esc(e.title || ''))
       .linkWidth(e => e.width || 1)
       .linkOpacity(0.32)
-      .onNodeClick(n => { chosen = n.id; showInfo(n.id); })
+      .onNodeClick(n => {
+        if (typeof window.graphifyOpenCommunity === 'function' &&
+            window.graphifyOpenCommunity(n.id)) return;
+        chosen = n.id; showInfo(n.id);
+      })
       .onBackgroundClick(() => {
         document.getElementById('info-content').innerHTML =
           '<span class="empty">Click a node to inspect it</span>';
