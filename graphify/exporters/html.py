@@ -4,6 +4,8 @@ from __future__ import annotations
 from graphify.exporters.base import COMMUNITY_COLORS  # noqa: E402,F401
 from graphify.exporters.html_data import build_html_payload
 from graphify.exporters.html_3d import html_3d_script
+from graphify.exporters.html_explore import script_for
+from graphify.exporters.html_explore_data import snapshots
 from pathlib import Path
 import html as _html
 from graphify.analyze import _node_community_map
@@ -117,6 +119,7 @@ function convexHull(pts) {{
     return hull.length >= 3 ? hull : p;
 }}
 network.on('afterDrawing', function(ctx) {{
+    if (window.graphifyDrilldown) return;
     hyperedges.forEach(h => {{
         const positions = h.nodes
             .map(nid => network.getPositions([nid])[nid])
@@ -518,6 +521,7 @@ def to_html(
     member_counts: dict[int, int] | None = None,
     node_limit: int | None = None,
     learning_overlay: dict | None = None,
+    _community_snapshots: dict | None = None,
 ) -> bool:
     """Generate an interactive vis.js HTML visualization of the graph.
 
@@ -582,8 +586,10 @@ def to_html(
                         "nodes": comm_ids,
                     })
                 meta.graph["hyperedges"] = remapped
+            snapshot_data = snapshots(G, communities, output_path, community_labels)
             written = to_html(meta, meta_communities, output_path,
-                              community_labels=community_labels, member_counts=mc)
+                              community_labels=community_labels, member_counts=mc,
+                              _community_snapshots=snapshot_data)
             if not written:
                 return False
             print(f"graph.html written (aggregated: {meta.number_of_nodes()} community nodes, {meta.number_of_edges()} cross-community edges)")
@@ -627,6 +633,10 @@ def to_html(
 <div id="graph"></div>
 <div id="graph3d" aria-label="3D graph visualization"></div>
 <div id="sidebar">
+  <div id="explore-controls" style="padding:8px;border-bottom:1px solid var(--border)">
+    <button id="explore-back" type="button" hidden>Back to communities</button>
+    <div id="explore-status">Double-click a community to explore</div>
+  </div>
   <div id="graphify-view-toggle" role="group" aria-label="Graph dimension">
     <button id="graphify-view-2d" type="button" aria-pressed="true">2D</button>
     <button id="graphify-view-3d" type="button" aria-pressed="false">3D</button>
@@ -655,6 +665,7 @@ def to_html(
 </div>
 {_html_script(nodes_json, edges_json, legend_json)}
 {html_3d_script()}
+{script_for(_community_snapshots) if _community_snapshots is not None else ''}
 {_hyperedge_script(hyperedges_json)}
 </body>
 </html>"""
