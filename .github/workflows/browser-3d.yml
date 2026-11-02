@@ -1,0 +1,29 @@
+name: 3D Browser Smoke
+
+on:
+  pull_request:
+    branches: [v8]
+    paths:
+      - "graphify/exporters/html.py"
+      - "graphify/exporters/html_3d.py"
+      - "graphify/exporters/html_data.py"
+      - "tests/browser_3d_smoke.py"
+      - ".github/workflows/browser-3d.yml"
+  workflow_dispatch:
+
+jobs:
+  chromium-3d:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v8.1.0
+        with:
+          python-version: "3.12"
+      - name: Install project and Playwright
+        run: |
+          uv sync --frozen
+          uv pip install playwright
+          uv run --no-sync python -m playwright install --with-deps chromium
+      - name: Run real Chromium / WebGL smoke
+        run: uv run --no-sync python tests/browser_3d_smoke.py
