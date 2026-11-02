@@ -20,7 +20,7 @@ def html_3d_script() -> str:
       color: n.color.background, val: Math.max(1, n.size / 8)
     }));
     const visible = new Set(nodes.map(n => n.id));
-    const links = RAW_EDGES.filter(e => visible.has(e.from) && visible.has(e.to))
+    const links = edgesDS.get().filter(e => visible.has(e.from) && visible.has(e.to))
       .map(e => ({ source: e.from, target: e.to, title: e.title,
                     confidence: e.confidence, width: e.width }));
     return { nodes, links };
